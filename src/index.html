@@ -1,0 +1,804 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>What Did I Eat?</title>
+<!--http://codepen.io/maccadb7/pen/nbHEg-->
+<style>
+body {
+  color: #333333;
+  font-family: 'Helvetica', arial;
+  height: 80em;
+}
+.wrap {
+  padding: 40px;
+  text-align: center;
+}
+hr {
+  clear: both;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  border: 0;
+  border-top: 1px solid #aaaaaa;
+}
+h1 {
+  font-size: 30px;
+  margin-bottom: 40px;
+}
+p {
+  margin-bottom: 20px;
+}
+.btn {
+  background: #428bca;
+  border: #357ebd solid 1px;
+  border-radius: 3px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  padding: 8px 15px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 60px;
+  position: relative;
+  transition: color .1s ease;
+  /* top: 40em;*/
+}
+.btn:hover {
+  background: #357ebd;
+}
+.btn.btn-big {
+  font-size: 18px;
+  padding: 15px 20px;
+  min-width: 100px;
+}
+.btn-close {
+  color: #aaaaaa;
+  font-size: 30px;
+  text-decoration: none;
+  position: absolute;
+  right: 5px;
+  top: 0;
+}
+.btn-close:hover {
+  color: #919191;
+}
+.modal:before {
+  content: "";
+  display: none;
+  background: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.modal:target:before, .modal.show:before {
+  display: block;
+}
+.modal:target .modal-dialog, .modal.show .modal-dialog {
+  -webkit-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+  top: 20%;
+}
+.modal-dialog {
+  background: #fefefe;
+  border: #333333 solid 1px;
+  border-radius: 5px;
+  margin-left: -200px;
+  position: fixed;
+  left: 50%;
+  top: -100%;
+  z-index: 11;
+  //width: 360px;
+  max-width: 75%;
+  -webkit-transform: translate(0, -500%);
+  -ms-transform: translate(0, -500%);
+  transform: translate(0, -500%);
+  -webkit-transition: -webkit-transform 0.5s ease-out;
+  -moz-transition: -moz-transform 0.5s ease-out;
+  -o-transition: -o-transform 0.5s ease-out;
+  transition: transform 0.5s ease-out;
+}
+.modal-body {
+  padding: 20px;
+}
+.modal-header,
+.modal-footer {
+  padding: 10px 20px;
+}
+.modal-header {
+  border-bottom: #eeeeee solid 1px;
+}
+.modal-header h2 {
+  font-size: 20px;
+}
+.modal-footer {
+  border-top: #eeeeee solid 1px;
+  text-align: right;
+}
+
+</style>
+<!--end thievery-->
+<style>
+	body {
+		max-width: 100%;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		-ms-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+	.meal {
+		width: 90%;
+		display: flex;
+		flex-wrap:wrap;
+	}
+	
+	.meal-food-list {
+		width: 75%;
+	}
+	
+	.meal-data {
+		width: 25%;
+	}
+	
+	.food-item {
+		width: 75%;
+		display: flex;
+		flex-wrap: wrap;
+	}
+	
+	.item-data {
+		width: 16%;
+	}
+	
+</style>
+<body>
+
+	<section id="calorieApp" class="wrap">
+		<header id="search">
+			<h1>I ate...</h1>
+			<input id="new-food" placeholder="What did I eat?">
+			
+		</header>
+		<header id="settings">
+			<a href="#modal-settings" class="btn btn-big">Settings</a>
+		</header>
+		<hr />
+		<section id="main">
+			<div id="my-food-list"></div>
+		</section>
+		<hr />
+		<section id="meals">
+		</section>
+	</section>
+
+	<!-- Modal -->
+	<div class="modal" id="modal-settings" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-header">
+				<h2>You will need your own Nutritionix keys and Firebase repository</h2>
+				<a href="#top" class="btn-close" aria-hidden="true">×</a>
+			</div>
+			<div id="settings-data" class="modal-body">
+
+				<input id="nutkey" placeholder="Nutritionix Application Key"></input>
+				<input id="nutappid" placeholder="Nutritionix Application ID"></input>
+				<input id="fireaddress" placeholder="Firebase Address"></input>
+
+				<div class="modal-footer">
+					<a id="settings-save" href="#calorieApp" class="btn">Save!</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /Modal -->
+	
+	<!-- Modal -->
+<div class="modal" id="modal-search-list" aria-hidden="true">
+  <div id="search-list-data" class="modal-dialog">
+    <div class="modal-header">
+      <h2 id="new-food-name">Two Modal in CSS?</h2>
+	  
+      <a href="#top" class="btn-close" aria-hidden="true">×</a> <!--CHANGED TO "#close"-->
+    </div>
+    <div class="modal-body">
+      <!--<p id="search-results"></p>-->
+	  <div id="search-results">
+	  </div>
+    </div>
+    <div class="modal-footer">
+	<a href="#modal-new" class="btn btn-big">Over</a>
+    <a id="list-modal-button" href="#top" class="btn">Two Nice!</a>  <!--CHANGED TO "#close"-->
+    </div>
+    </div>
+  </div>
+</div>
+<!-- /Modal -->
+
+	<!-- Modal -->
+<div class="modal" id="add-new-food" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>Two Modal in CSS?</h2>
+	  
+      <a href="#top" class="btn-close" aria-hidden="true">×</a> <!--CHANGED TO "#close"-->
+    </div>
+    <div class="modal-body">
+      <!--<p id="search-results"></p>-->
+	  <div id="new-food-data">
+	  </div>
+    </div>
+    <div class="modal-footer">
+	<a href="#modal-new" class="btn btn-big">Over</a>
+    <a id="save-food-button" href="#top" class="btn">Two Nice!</a>  <!--CHANGED TO "#close"-->
+    </div>
+    </div>
+  </div>
+</div>
+<!-- /Modal -->
+
+
+	<!-- ========= -->
+	<!-- Libraries -->
+	<!-- ========= -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js" type="text/javascript"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js" type="text/javascript"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/backbone-localstorage.js/1.0/backbone.localStorage-min.js" type="text/javascript"></script>
+
+	<!-- ========= -->
+	<!-- Templates -->
+	<!-- ========= -->
+	
+	<script type="text/template" id="my-item-template">
+		<div class='item-data'><%- name %></div>
+		<div class='item-data'><%- meal %></div>
+		<div class='item-data'><%- quantity %></div>
+		<div class='item-data'><%- units %></div>
+		<div class='item-data'><%- calories %></div>
+		<div class='item-data'><%- notes %></div>
+	</script>
+	
+	<script type="text/template" id="nutritionix-item-template">
+		<span class='view nutid'><%- nutritionixId %></span> 
+		<span class='view'><%- name %></span>
+		<span class='view'><%- quantity %></span>
+		<span class='view'><%- units %></span>
+		<span class='view'><%- calories %></span>
+	</script>
+	
+	<script type="text/template" id="new-item-template">
+		<span class='view'><%- name %></span>
+		<span class='view'><%- meal %></span>
+		<span class='view'><%- quantity %></span>
+		<span class='view'><%- units %></span>
+		<span class='view'><%- calories %></span>
+		<span class='view'><%- notes %></span>
+		<button class="save-item">SAVE</button>
+	</script>
+	
+	<script type="text/template" id="meal-template">
+		<div>
+			<%
+				console.log('meal-template...');
+				//console.dir(this);
+				console.dir(foodItems);
+				//console.dir(this.foodItems);
+				var list = new app.MyFoodListView({collection: foodItems});
+				//if this works, try print list.render().el
+				//this.$el.append(list.render().el);
+				print(list.render().$el.html());
+			%>
+		</div>
+		<div>
+			<% 
+				print('calories: '+this.model.calories()); 
+			%>
+		</div>
+	</script>
+	
+	<script type="text/template" id="meal-view-template">
+		<div class="meal-food-list"></div>
+		<div class="meal-data">
+		</div>
+	</script>
+	
+	<script type="text/template" id="day-view-template">
+		<div class="meal-list"></div>
+		<div class="day-data">
+		</div>
+	</script>
+	
+	<script>
+	/*****************/
+	/*	Namespace	*/
+	/*****************/
+	
+	var app = {days: {}};
+	
+	/*****************/
+	/*	Models	*/
+	/*****************/
+	
+	app.Settings = Backbone.Model.extend({
+		searchBase: 'https://api.nutritionix.com/v1_1/search/',
+		searchParms: '?results=0:3&fields=item_name,brand_name,item_id,nf_calories&',
+		defaults: {
+			nAppId: 'f4a802c3',
+			nAppKey: 'bf99750cd2a7430e09cc6922ab659d72',
+			firebaseAddress: ''
+		},
+		localStorage: new Store("backbone-nutritionix")
+	});
+	
+	app.MyFoodItem = Backbone.Model.extend({
+		defaults: {
+			name: '',
+			nutritionixId: 0,
+			date: new Date(),
+			meal: 'Snack',
+			quantity: 0,
+			units: 'NA',
+			calories: 0,
+			notes: ''
+		}
+	});
+	
+	app.Meal = Backbone.Model.extend({
+		defaults: {
+			//date: Date,
+			foodItems: app.MyFoodList,
+			name: 'snack'
+			
+		},
+		
+		initialize: function() {
+			console.log('initializing meal');
+			//console.dir(model.foodItems);
+			//this.foodItems = model.foodItems;
+		},
+		calories: function() {
+			console.log('default meal...');
+			console.dir(this.get('foodItems'));
+			var cals = 0;
+			for(var i=0,l=this.get('foodItems').length;i<l;i++) {
+				cals += this.get('foodItems').at(i).get('calories');
+			}
+			return cals;
+		}
+	});
+	
+	app.Day = Backbone.Model.extend({
+		defaults: {
+			date: Date,
+			meals: app.Meals,
+			
+			initialize: function(model) {
+				this.meals = model.meals;
+			}
+		},
+		
+		totalCalories: function() {
+			var cals = 0;
+			for(var i=0,l=this.meals.length;i<l;i++) {
+				cals += meals.at(i).get('calories').call(meals.at(i));
+			}
+			return cals;
+		}
+	});
+	
+	app.NutritionixFoodItem = Backbone.Model.extend({
+		defaults: {
+			name: '',
+			nutritionixId: 0,
+			quantity: 0,
+			units: 'NA',
+			calories: 0
+		}
+	});
+	
+	
+	/*****************/
+	/*	Collections	*/
+	/*****************/
+	
+	app.MyFoodList = Backbone.Collection.extend({
+		model: app.MyFoodItem,
+		localStorage: new Store("backbone-food-list")
+	});
+	
+	app.Meals = Backbone.Collection.extend({
+		model: app.Meal,
+		localStorage: new Store("backbone-food-list")
+	});
+	
+	app.Days = Backbone.Collection.extend({
+		model: app.Day,
+		localStorage: new Store("backbone-food-list")
+	});
+	
+	app.NutritionixFoodList = Backbone.Collection.extend({
+		model: app.NutritionixFoodItem
+	});
+	
+	/*****************/
+	/*	Views	*/
+	/*****************/
+	
+	app.SettingsView = Backbone.View.extend({
+		el: '#settings-data',
+		initialize: function() {
+			this.nAppKey = this.$('#nutkey');
+			this.nAppId = this.$('#nutappid');
+			this.firebaseAddress = this.$('#fireaddress');
+			app.settings.on('add', this.saveSettingsOnClick, this);
+			app.settings.fetch();
+		},
+		
+		events: {
+			'click #settings-save': 'saveSettingsOnClick'
+		},
+		
+		saveSettingsOnClick: function() {
+			console.log('Caught the click!');
+			app.settings = new app.Settings(this.newAttributes());
+		},
+		
+		newAttributes: function(){
+			return {
+				nAppKey: this.nAppKey.val().trim(),
+				nAppId: this.nAppId.val().trim(),
+				firebaseAddress: this.firebaseAddress.val().trim()
+			}
+		}
+	});
+	
+	app.SearchView = Backbone.View.extend({
+		el: '#search',
+		
+		initialize: function() {
+			this.input = this.$('#new-food');
+		},
+		
+		events: {
+			'keypress #new-food': 'openListModal'
+		},
+		
+		openListModal: function(e) {
+			
+			if ( e.which !== 13 || !this.input.val().trim() ) { // ENTER_KEY = 13
+				return;
+			}
+			console.log('opening openlistmodal');
+			app.searchFood = this.input.val().trim();
+			$('#modal-search-list').addClass('show');
+			app.nutritionixFoodListView = new app.NutritionixFoodListView();
+		}
+		
+	});
+	
+	app.MyFoodItemView = Backbone.View.extend({
+		tagName: 'div',
+		template: _.template($('#my-item-template').html()),
+		initialize: function() {
+			this.model.on('change', this.render, this);
+		},
+		render: function(){
+			console.log('rendering item...');
+			console.dir(this.model.toJSON());
+			this.$el.addClass('food-item');
+			this.$el.html(this.template(this.model.toJSON()));
+			return this; // enable chained calls
+		}/*,
+		events: {
+			'change this.model': 'render'
+		}*/
+	});
+	
+	
+	//http://backbonejs.org/#Collection-comparator
+	app.MyFoodListView = Backbone.View.extend({
+		tagName: 'ul',
+		
+		initialize: function() {
+			this.collection.on('add', this.addOne, this);
+			//console.log(this.collection);
+		},
+		
+		render: function() {
+			this.collection.each(function(food){
+				//console.log(food);
+				var myFoodItemView = new app.MyFoodItemView({model: food});
+				this.$el.append(myFoodItemView.render().el);
+			}, this);
+			//console.dir(this.$el.html());
+			return this;
+		},
+		
+		addOne: function(food) {
+			console.log('adding one');
+			//app.myFoodList.add(food);
+			var myFoodItemView = new app.MyFoodItemView({model: food});
+			this.$el.append(myFoodItemView.render().el);
+		}
+	});
+	
+	app.NewFoodView = Backbone.View.extend({
+		tagName: 'div',
+		template: _.template($('#new-item-template').html()),
+		initialize: function() {
+			this.render();
+			//console.log(this.collection);
+		},
+		render: function(){
+			//console.log('rendering item...');
+			console.dir(this.model.toJSON());
+			this.$el.html(this.template(this.model.toJSON()));
+			//console.dir(this.$el.html());
+			$('#new-food-data').append(this.$el);
+			
+			return this; // enable chained calls
+		},
+		
+		events: {
+			'click .save-item': 'saveItem'
+		},
+		
+		saveItem: function() {
+			console.log('saving item');
+			//var view = new app.MyFoodItemView({model: this.model});
+			//app.myFoodList.add(this.model);
+			app.myFoodList.add(this.model);
+		}
+	});
+	/*
+	app.MealView = Backbone.View.extend({
+		//tagName: 'div',
+		el: '#meals',
+		//template: _.template($('#meal-template').html()),
+		initialize: function() {
+			//this.model.on('change', this.render, this);
+			this.render();
+		},
+		render: function(){
+			console.log('rendering meal...');
+			console.dir(this.model.toJSON());
+			//this.$el.html(this.template(this.model.toJSON()));
+			var items = this.model.get('foodItems');
+			var view = new app.MyFoodListView({collection: items});
+			view.setElement( this.$el.find('#nested-food-list') ).render();
+			//this.$el.append(view.render().el);
+			//console.log('meal $el...');
+			//console.dir(this.$el.html());
+			console.log('mealview calories: '+this.model.calories());
+			
+			var template = _.template($('#selector-test-template').html());
+			var cont = $('<div>');
+			cont.html(template(this.model.toJSON()));
+			
+			console.log('templating...');
+			cont.find('.test1').html(this.model.calories());
+			console.dir(cont.find('.test1'));
+			return this; // enable chained calls
+			
+		}
+	});*/
+	
+	app.MealView = Backbone.View.extend({
+		tagName: 'div',
+		template: _.template($('#meal-view-template').html()),
+		//model: app.Meal,
+		initialize: function() {
+		//this.model = model;
+			//console.log('mealview inititit');
+			//console.dir(model);
+			//console.dir(this.model);
+			var items = this.model.get('foodItems');
+			items.on('change:calories',this.render,this);
+			this.render();
+		},
+		render: function() {
+			//this.$el.html(this.template(this.model.toJSON()));
+			this.$el.addClass('meal');
+			var cont = this.$el.html(this.template());
+			var items = this.model.get('foodItems');
+			var flview = new app.MyFoodListView({collection: items});
+			flview.setElement(cont.find('.meal-food-list')).render();
+			cont.find('.meal-data').html(this.model.calories());
+			return this;
+		}
+	});
+	
+	
+	app.MealsView = Backbone.View.extend({
+		tagName: 'ul',
+		
+		initialize: function() {
+			this.collection.on('add', this.addOne, this);
+			//console.log(this.collection);
+		},
+		
+		render: function() {
+			this.collection.each(function(meal){
+				//console.log(food);
+				var mealView = new app.MealView({model: meal});
+				this.$el.append(mealView.render().el);
+			}, this);
+			//console.dir(this.$el.html());
+			return this;
+		},
+		
+		addOne: function(food) {
+			console.log('adding one');
+			//app.myFoodList.add(food);
+			var mealView = new app.MealView({model: meal});
+			this.$el.append(mealView.render().el);
+		}
+	});
+	
+	
+	app.DayView = Backbone.View.extend({
+		tagName: 'div',
+		template: _.template($('#day-view-template').html()),
+		//model: app.Meal,
+		initialize: function() {
+		//this.model = model;
+			//console.log('mealview inititit');
+			//console.dir(model);
+			//console.dir(this.model);
+			var meals = this.model.get('meals');
+			items.on('add',this.render,this);
+			this.render();
+		},
+		render: function() {
+			//this.$el.html(this.template(this.model.toJSON()));
+			var cont = this.$el.html(this.template());
+			var meals = this.model.get('meals');
+			var mealsview = new app.MealsView({collection: meals});
+			mealsview.setElement(cont.find('.meal-list')).render();
+			cont.find('.day-data').html(this.model.totalCalories());
+			return this;
+		}
+	});
+	
+	
+	
+	app.DaysView = Backbone.View.extend({
+		tagName: 'ul',
+		
+		initialize: function() {
+			this.collection.on('add', this.addOne, this);
+			//console.log(this.collection);
+		},
+		
+		render: function() {
+			this.collection.each(function(day){
+				//console.log(food);
+				var dayView = new app.DayView({model: day});
+				this.$el.append(dayView.render().el);
+			}, this);
+			//console.dir(this.$el.html());
+			return this;
+		},
+		
+		addOne: function(day) {
+			console.log('adding one');
+			//app.myFoodList.add(food);
+			var dayView = new app.DayView({model: day});
+			this.$el.append(dayView.render().el);
+		}
+	});
+	
+	
+	app.NutritionixFoodItemView = Backbone.View.extend({
+		tagName: 'li',
+		template: _.template($('#nutritionix-item-template').html()),
+		
+		events: {
+			'click .nutid': 'pickNutritionixItem'
+		},
+		
+		render: function(){
+			//console.log('rendering item...');
+			//console.dir(this.model.toJSON());
+			this.$el.html(this.template(this.model.toJSON()));
+			return this; // enable chained calls
+		},
+		
+		pickNutritionixItem: function() {
+			console.log('picked an item:');
+			console.dir(this);
+			var m = this.model;
+			var newFood = new app.MyFoodItem({nutritionixId: m.get('nutritionixId'), name: m.get('name'), quantity: m.get('quantity'),units: m.get('units'), calories: m.get('calories')});
+			$('#add-new-food').addClass('show');
+			app.newFoodView = new app.NewFoodView({model: newFood});
+		}
+	});
+	
+	app.NutritionixFoodListView = Backbone.View.extend({
+		tagName: 'ul',
+		
+		initialize: function() {
+			//console.log(this.collection);
+			
+			this.render();
+		},
+		
+		render: function() {
+			var settings = app.settings;
+			var searchUrl = settings.searchBase+app.searchFood+settings.searchParms+'appId='+settings.get('nAppId')+'&appKey='+settings.get('nAppKey');
+			console.log(searchUrl);
+			var _this = this;
+			
+			$.ajax({
+					  // The 'type' property sets the HTTP method.
+					  // A value of 'PUT' or 'DELETE' will trigger a preflight request.
+					  type: 'GET',
+
+					  // The URL to make the request to.
+					  url: searchUrl,
+
+					  // The 'contentType' property sets the 'Content-Type' header.
+					  // The JQuery default for this property is
+					  // 'application/x-www-form-urlencoded; charset=UTF-8', which does not trigger
+					  // a preflight. If you set this value to anything other than
+					  // application/x-www-form-urlencoded, multipart/form-data, or text/plain,
+					  // you will trigger a preflight request.
+					  contentType: 'text/plain',
+					  
+					  success: function(result) {
+						//console.dir(result.hits[0].fields);
+						//var item1 = new app.FoodItem({name: 'tortellini',meal: 'Dinner', quantity: 8, units: 'oz', calories: 400, notes: 'I ate dinner'});
+						for (var i=0,l=result.hits.length;i<l;i++) {
+							var fields = result.hits[i].fields;
+							var item = new app.NutritionixFoodItem({name: fields['item_name'],quantity: fields['nf_serving_size_qty'],units: fields['nf_serving_size_unit'],calories: fields['nf_calories'], nutritionixId: fields['item_id']});
+							var view = new app.NutritionixFoodItemView({model: item});
+							_this.$el.append(view.render().el);
+							//searchResults.push(item)
+						}
+						//_this.renderSearch()
+					  },
+					  
+					  error: function(e) {
+						console.dir(e);
+					  }
+			});
+			
+			$('#search-results').append(this.$el);
+			/*this.collection.each(function(food){
+				//console.log(food);
+				var nutritionixFoodItemView = new app.MyFoodItemView({model: food});
+				this.$el.append(nutritionixFoodItemView.render().el);
+			}, this);*/
+			
+			return this;
+		}
+	});
+	/*****************/
+	/*	Initializers	*/
+	/*****************/
+	
+	app.settings = new app.Settings();
+	app.settingsView = new app.SettingsView();
+	
+	app.searchView = new app.SearchView();
+	
+	app.myFoodList = new app.MyFoodList([
+		{name: 'tortellini',meal: 'Dinner', quantity: 8, units: 'oz', calories: 400, notes: 'I ate dinner'},
+		{name: 'chocoloate chip cookie',meal: 'Dessert', quantity: 2, calories: 400, notes: 'I ate dinner'},
+		{name: 'spam',meal: 'Dessert', quantity: 2, calories: 400, notes: 'I ate dinner'}
+	]);
+	app.myFoodListView = new app.MyFoodListView({collection: app.myFoodList});
+	$('#my-food-list').append(app.myFoodListView.render().el);
+	
+	var meal =  new app.Meal({foodItems: app.myFoodList});
+	var mealView = new app.MealView({model: meal});
+	
+	$('#meals').append(mealView.render().el);
+	meal.get('foodItems').at(0).set('name','garbage');
+	
+	</script>
+</body>
+</html>
