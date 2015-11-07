@@ -172,6 +172,9 @@ p {
 		<hr />
 		<section id="meals">
 		</section>
+		<hr />
+		<section id="day">
+		</section>
 	</section>
 
 	<!-- Modal -->
@@ -382,8 +385,9 @@ p {
 		
 		totalCalories: function() {
 			var cals = 0;
-			for(var i=0,l=this.meals.length;i<l;i++) {
-				cals += meals.at(i).get('calories').call(meals.at(i));
+			for(var i=0,l=this.get('meals').length;i<l;i++) {
+				//cals += meals.at(i).get('calories').call(meals.at(i));
+				cals += meals.at(i).calories();
 			}
 			return cals;
 		}
@@ -649,11 +653,12 @@ p {
 			//console.dir(model);
 			//console.dir(this.model);
 			var meals = this.model.get('meals');
-			items.on('add',this.render,this);
+			meals.on('add',this.render,this);
 			this.render();
 		},
 		render: function() {
 			//this.$el.html(this.template(this.model.toJSON()));
+			this.$el.addClass('day');
 			var cont = this.$el.html(this.template());
 			var meals = this.model.get('meals');
 			var mealsview = new app.MealsView({collection: meals});
@@ -794,10 +799,14 @@ p {
 	$('#my-food-list').append(app.myFoodListView.render().el);
 	
 	var meal =  new app.Meal({foodItems: app.myFoodList});
-	var mealView = new app.MealView({model: meal});
+	var meals = new app.Meals([meal]);
+	var day =new app.Day({meals: meals});
+	var dayView = new app.DayView({model: day});
+	$('#day').append(dayView.render().el);
+	//var mealView = new app.MealView({model: meal});
 	
-	$('#meals').append(mealView.render().el);
-	meal.get('foodItems').at(0).set('name','garbage');
+	//$('#meals').append(mealView.render().el);
+	//meal.get('foodItems').at(0).set('name','garbage');
 	
 	</script>
 </body>
